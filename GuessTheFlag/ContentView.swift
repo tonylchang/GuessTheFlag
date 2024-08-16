@@ -7,6 +7,23 @@
 
 import SwiftUI
 
+struct BigBlueTitle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.largeTitle)
+            .fontWeight(.heavy)
+            .foregroundStyle(.blue)
+            .padding()
+            .clipShape(.rect(cornerRadius: 10))
+    }
+}
+
+extension View {
+    func bigBlueTitleStyle() -> some View {
+        modifier(BigBlueTitle())
+    }
+}
+
 struct ContentView: View {
 
     @State private var showingAlert = false
@@ -27,15 +44,14 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             RadialGradient(stops: [
-                .init(color: Color(red: 0.1, green: 0.2, blue: 0.45), location: 0.3),
+                .init(color: Color(red: 0.2, green: 0.2, blue: 0.25), location: 0.3),
                 .init(color: Color(red: 0.76, green: 0.15, blue: 0.26), location: 0.3),
             ], center: .top, startRadius: 200, endRadius: 400)
             .ignoresSafeArea()
             VStack {
                 Spacer()
                 Text("Guess the Flag")
-                    .font(.largeTitle.bold())
-                    .foregroundStyle(.white)
+                    .bigBlueTitleStyle()
                 Spacer()
                 Text("Score: \(playerScore)")
                     .foregroundStyle(.white)
@@ -56,10 +72,8 @@ struct ContentView: View {
                         Button {
                             flagTapped(number)
                         } label: {
-                            Image(countries[number])
+                            FlagImage(number)
                         }
-                        .clipShape(.capsule)
-                        .shadow(radius: 5)
                     }
                 }
             }
@@ -72,6 +86,12 @@ struct ContentView: View {
             Button("New Game", action: newGame)
         }
 
+    }
+    
+    func FlagImage(_ number: Int) -> some View {
+        return Image(countries[number])
+            .clipShape(.capsule)
+            .shadow(radius: 5)
     }
     
     func flagTapped(_ number: Int) {
