@@ -41,11 +41,19 @@ struct ContentView: View {
     @State private var numberOfRounds = 8
     @State private var currentRound = 1
     
+    @State private var animationAmount = 0.0
+    @State private var opacityAmount = 1.0
+    @State private var scaleAmount = 1.0
+
+    @State private var selectedFlag: Int? = nil
+    @State private var displayOpacity = false
+    @State private var scaleDown = false
+
     var body: some View {
         ZStack {
             RadialGradient(stops: [
-                .init(color: Color(red: 0.2, green: 0.2, blue: 0.25), location: 0.3),
-                .init(color: Color(red: 0.76, green: 0.15, blue: 0.26), location: 0.3),
+                .init(color: Color(red: 0.6, green: 0.7, blue: 0.75), location: 0.3),
+                .init(color: Color(red: 0.76, green: 0.5, blue: 0.26), location: 0.3),
             ], center: .top, startRadius: 200, endRadius: 400)
             .ignoresSafeArea()
             VStack {
@@ -61,19 +69,30 @@ struct ContentView: View {
                 VStack(spacing: 15) {
                     VStack {
                         Text("Tap the flag of")
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.secondary)
                             .font(.subheadline.weight(.heavy))
                         Text(countries[correctAnswer])
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white)
                             .font(.largeTitle.weight(.semibold))
                     }
                     
                     ForEach(0..<3) { number in
                         Button {
-                            flagTapped(number)
+                            withAnimation {
+                                flagTapped(number)
+                                animationAmount += 360
+                            }
                         } label: {
                             FlagImage(number)
                         }
+                        .opacity( 
+                            displayOpacity ? (selectedFlag == number ? opacityAmount : 0.25) : 1.0
+                        )
+                        .rotation3DEffect(
+                            .degrees((selectedFlag == number) ? animationAmount : 0.0),
+                            axis: (x: 0, y: 1, z: 0)
+                        )
+                        .scaleEffect(scaleDown ? (selectedFlag == number ? 1 : 0.5) : 1)
                     }
                 }
             }
@@ -95,6 +114,9 @@ struct ContentView: View {
     }
     
     func flagTapped(_ number: Int) {
+        selectedFlag = number
+        displayOpacity = true
+        scaleDown = true
         if currentRound == (numberOfRounds) {
             playerScore += (number == correctAnswer) ? 1 : 0
             gameOverTitle = "Game over! Final score: \(playerScore)"
@@ -114,11 +136,15 @@ struct ContentView: View {
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        selectedFlag = nil
+        displayOpacity = false
+        scaleDown = false
     }
     
     func newGame() {
         currentRound = 0
         playerScore = 0
+        askQuestion()
     }
     
 }
